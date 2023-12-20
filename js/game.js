@@ -33,14 +33,14 @@ function create () {
     blocks = this.physics.add.staticGroup();
     createRowOfBlocks.call(this, 80, 'blue_block');
     ball = this.physics.add.sprite(400, 300, 'ball');
-    ball.setCollideWorldBounds(true);
-    ball.setBounce(1, 1);
-    ball.setVelocity(0, 400);
+    ball.setCollideWorldBounds(true); // Collides with world
+    ball.setBounce(1, 1); // Keeps velocity on bounces
+    ball.setVelocity(0, 400); // X velocity = 0, Y velocity = 400
     paddle = this.physics.add.sprite(400, 500, 'paddle');
     paddle.setCollideWorldBounds(true); // Stops from going into walls
-    paddle.body.immovable = true;
-    this.physics.add.collider(ball, paddle, updateAngle, null, this);
-    this.physics.add.collider(ball, blocks, hitBlock, null, this);
+    paddle.body.immovable = true; // Paddle wont move when the ball hits it
+    this.physics.add.collider(ball, paddle, updateAngle, null, this); // Calls updateAngle on collision
+    this.physics.add.collider(ball, blocks, hitBlock, null, this); // Calls hitBlock on collision
 }
 
 function update () {
