@@ -6,7 +6,19 @@ self.addEventListener('install', (event) => {
                 '/style.css',
                 '/js/game.js',
                 '/levels.json',
-                '/assets/'
+                '/assets/background.png',
+                '/assets/ball.png',
+                '/assets/block_blue.png',
+                '/assets/block_darkblue.png',
+                '/assets/block_green.png',
+                '/assets/block_orange.png',
+                '/assets/block_pink.png',
+                '/assets/block_red.png',
+                '/assets/block_turquoise.png',
+                '/assets/block_yellow.png',
+                '/assets/paddle.png',
+                '/assets/pause_button1.png',
+                '/assets/restart.png'
             ]);
         })
     );
