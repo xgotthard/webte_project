@@ -298,6 +298,8 @@ class GameOver extends Phaser.Scene {
     }
 }
 
+
+    /*
     class InstructionScene extends Phaser.Scene {
         constructor() {
             super({ key: 'InstructionScene' });
@@ -322,6 +324,36 @@ class GameOver extends Phaser.Scene {
         }
     }    
 
+*/
+class InstructionScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'InstructionScene' });
+    }
+
+    create() {
+        
+        const instructionText = document.querySelector('.instruction-text').innerText;
+
+        const style = {
+            font: '23px Arial',
+            fill: '#ffffff',
+            align: 'center',
+            wordWrap: { width: 500, useAdvancedWrap: true },
+            stroke: '#000000',       
+            strokeThickness: 3         
+        };
+
+        
+        const text = this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2, instructionText, style)
+            .setOrigin(0.5, 0.3);
+        text.setStroke('#000000', 4);
+        
+        this.input.on('pointerdown', () => {
+            this.scene.stop();
+            this.scene.resume('MainScene');
+        }, this);
+    }
+}
 
 
 class VictoryScene extends Phaser.Scene {
