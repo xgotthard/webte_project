@@ -1,6 +1,17 @@
 const maxAdjustmentAngle = 70;
 let scoreText;
 
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then((registration) => {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }, (err) => {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+    });
+}
+
 class MainScene extends Phaser.Scene {
     cursors;
     ball;
@@ -103,7 +114,7 @@ infoBtn.on('pointerdown', function () {
             this.paddle.setVelocityX(-350); // left
         } else if (this.cursors.right.isDown) { // Is right arrow held
             this.paddle.setVelocityX(350); // right
-        } else if (this.pointer.isDown && (this.pointer.x >= 0 && this.pointer.x <= this.sys.game.config.width &&
+        } /*else if (this.pointer.isDown && (this.pointer.x >= 0 && this.pointer.x <= this.sys.game.config.width &&
             this.pointer.y >= 0 && this.pointer.y <= this.sys.game.config.height)) {
             // Check if the mouse pointer is to the left of the paddle
             if (this.pointer.x < this.paddle.x) {
@@ -113,7 +124,7 @@ infoBtn.on('pointerdown', function () {
             else if (this.pointer.x > this.paddle.x) {
                 this.paddle.setVelocityX(350);   // Move right
             }
-        } else {
+        }*/ else {
             // Not moving if mouse isn't held or arrows aren't held
             this.paddle.setVelocityX(0);
         }
@@ -162,7 +173,7 @@ infoBtn.on('pointerdown', function () {
         const levelData = this.cache.json.get('levels').levels[this.currentLevel];
         scoreText.setText(`Score: ${this.score}  Order: ${this.currentLevel + 1}  Difficulty: ${levelData.level}`);
 
-        if (block.texture.key === 'blue_block') {
+        /*if (block.texture.key === 'blue_block') {
             this.blocks.create(block.x, block.y, 'orange_block').refreshBody();
         }
         if (block.texture.key === 'orange_block') {
@@ -176,7 +187,7 @@ infoBtn.on('pointerdown', function () {
         }
         if (block.texture.key === 'green_block') {
             this.blocks.create(block.x, block.y, 'yellow_block').refreshBody();
-        }
+        }*/
         if (this.blocks.countActive() === 0) {
             //this.advanceToNextLevel();
             this.scene.pause();
@@ -282,10 +293,10 @@ class GameOver extends Phaser.Scene {
     }
 
     create() {
-        this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Game Over', { fontSize: '32px', fill: '#d0a734' })
+        this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Game Over\n Press any button to restart', { fontSize: '32px', fill: '#d0a734' })
         .setOrigin(0.5, 0.5);
-        }
     }
+}
 
 
     /*
@@ -296,7 +307,7 @@ class GameOver extends Phaser.Scene {
     
         create() {
             // Create an instruction window
-            const textContent = 'Game Instructions:\n\nUse left and right arrows or click/drag to move the paddle.\nBreak all the blocks to advance to the next level.\nAvoid letting the ball fall below the paddle.';
+            const textContent = 'Game Instructions:\n\nUse left and right arrows to move the paddle.\nBreak all the blocks to advance to the next level.\nAvoid letting the ball fall below the paddle.';
             const instructionText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, textContent, {
                 fontSize: '20px',
                 fill: '#fff',
