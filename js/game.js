@@ -3,7 +3,7 @@ let scoreText;
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
+        navigator.serviceWorker.register('/Sem_project/service-worker.js')
             .then((registration) => {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
             }, (err) => {
@@ -45,7 +45,7 @@ class MainScene extends Phaser.Scene {
 
 
     create() {
-        // Create your game world here
+        this.loadGameState();
         this.add.image(400, 300, 'background');
         this.score = 0;
         this.scoreMult = 1;
@@ -129,18 +129,28 @@ infoBtn.on('pointerdown', function () {
             this.paddle.setVelocityX(0);
         }
         if (this.ball.body.onFloor()) {
-            console.log("bounce");
             this.checkBallOutOfBounds.call(this, this.ball);
         }
     }
     stopGame() {
         this.scene.pause();
         this.scene.launch('GameOver');
-
-
+        this.saveGameState();
         if (this.ball) {
             this.ball.destroy();
         }
+    }
+
+    saveGameState() {
+        localStorage.setItem('currentLevel', this.currentLevel.toString());
+        localStorage.setItem('score', this.score.toString());
+    }
+
+    loadGameState() {
+        const savedLevel = localStorage.getItem('currentLevel');
+        const savedScore = localStorage.getItem('score');
+        this.currentLevel = savedLevel ? parseInt(savedLevel) : 0;
+        this.score = savedScore ? parseInt(savedScore) : 0;
     }
 
     updateAngle(ball, paddle) {
@@ -167,7 +177,6 @@ infoBtn.on('pointerdown', function () {
     hitBlock(ball, block) {
         block.destroy();
         this.score += (10 * this.scoreMult);
-        console.log('Score: ', this.score, 'Mult: ', this.scoreMult);
         this.scoreMult += 1;
 
         const levelData = this.cache.json.get('levels').levels[this.currentLevel];
@@ -238,36 +247,36 @@ infoBtn.on('pointerdown', function () {
 
 
 
-advanceToNextLevel() {
-    this.currentLevel++;
+    advanceToNextLevel() {
+        this.currentLevel++;
 
-    if (this.currentLevel >= this.cache.json.get('levels').levels.length) {
-        // Check if all levels are completed
-        const allLevelsCompleted = this.checkAllLevelsCompleted();
-        
-        if (allLevelsCompleted) {
-            // Shuffle the levels and restart if all levels are completed
-            this.shuffleLevels();
-            this.currentLevel = 0;
+        if (this.currentLevel >= this.cache.json.get('levels').levels.length) {
+            // Check if all levels are completed
+            const allLevelsCompleted = this.checkAllLevelsCompleted();
+
+            if (allLevelsCompleted) {
+                // Shuffle the levels and restart if all levels are completed
+                this.shuffleLevels();
+                this.currentLevel = 0;
+            }
+        }
+        this.saveGameState();
+        this.scene.restart();
+    }
+
+    // Function to check if all levels are completed
+    checkAllLevelsCompleted() {
+        const levelsArray = this.cache.json.get('levels').levels;
+        return this.currentLevel >= levelsArray.length;
+    }
+
+    shuffleLevels() {
+        const levelsArray = this.cache.json.get('levels').levels;
+        for (let i = levelsArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [levelsArray[i], levelsArray[j]] = [levelsArray[j], levelsArray[i]];
         }
     }
-
-    this.scene.restart();
-}
-
-// Function to check if all levels are completed
-checkAllLevelsCompleted() {
-    const levelsArray = this.cache.json.get('levels').levels;
-    return this.currentLevel >= levelsArray.length;
-}
-
-shuffleLevels() {
-    const levelsArray = this.cache.json.get('levels').levels;
-    for (let i = levelsArray.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [levelsArray[i], levelsArray[j]] = [levelsArray[j], levelsArray[i]];
-    }
-}
 }
 
 class PauseScene extends Phaser.Scene {
@@ -295,6 +304,13 @@ class GameOver extends Phaser.Scene {
     create() {
         this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Game Over\n Press any button to restart', { fontSize: '32px', fill: '#d0a734' })
         .setOrigin(0.5, 0.5);
+        this.input.on('pointerdown', () => {
+            console.log('test');
+            localStorage.removeItem('currentLevel');
+            localStorage.removeItem('score');
+            this.scene.stop();
+            this.scene.start('MainScene');
+        });
     }
 }
 
@@ -415,5 +431,7 @@ const config = {
     },
     scene: [MainScene,InstructionScene, PauseScene, GameOver, VictoryScene]
 };
+
+
 
 const game = new Phaser.Game(config);
