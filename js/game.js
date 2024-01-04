@@ -103,7 +103,7 @@ infoBtn.on('pointerdown', function () {
         this.blocks = this.physics.add.staticGroup();
         this.createBlocksForLevel(80, levelData.blockColors); 
         this.ball = this.physics.add.sprite(gameConfig.centerX, gameConfig.centerY, 'ball');
-        this.paddle = this.physics.add.sprite(gameConfig.centerX,gameConfig.gameHeight *0.9, 'paddle');
+        this.paddle = this.physics.add.sprite(gameConfig.centerX,gameConfig.gameHeight *0.8, 'paddle');
         this.ball.setCollideWorldBounds(true); // Collides with world
         this.ball.setBounce(1, 1); // Keeps velocity on bounces
         this.ball.setVelocity(0,400); // X velocity = 0, Y velocity = 400
@@ -114,13 +114,36 @@ infoBtn.on('pointerdown', function () {
     }
 
     update() {
-        this.cursors = this.input.keyboard.createCursorKeys();
-        this.pointer = this.input.activePointer;
+        
+        //mobil
+        //if (window.DeviceOrientationEvent) {
+        if (window.DeviceOrientationEvent && (window.innerWidth <= 800 || window.innerHeight <= 800 )) {
+            console.log('Gyroscope');
+
+            this.cursors = null; 
+            this.pointer = null; 
+            window.addEventListener('deviceorientation', (event) => {
+                event.preventDefault();
+                const sensitivity = 0.02;
+                const tilt= event.gamma * sensitivity;
+                this.paddle.setVelocityX( tilt * 350);
+            });
+        }
+
+       //notbuk
+        //if (!window.DeviceOrientationEvent) {
+        else {
+            this.cursors = this.input.keyboard.createCursorKeys();
+            this.pointer = this.input.activePointer;
+
+            console.log('sipky');
+        
         if (this.cursors.left.isDown) { // Is left arrow held
             this.paddle.setVelocityX(-350); // left
         } else if (this.cursors.right.isDown) { // Is right arrow held
             this.paddle.setVelocityX(350); // right
-        } /*else if (this.pointer.isDown && (this.pointer.x >= 0 && this.pointer.x <= this.sys.game.config.width &&
+        } 
+        /*else if (this.pointer.isDown && (this.pointer.x >= 0 && this.pointer.x <= this.sys.game.config.width &&
             this.pointer.y >= 0 && this.pointer.y <= this.sys.game.config.height)) {
             // Check if the mouse pointer is to the left of the paddle
             if (this.pointer.x < this.paddle.x) {
@@ -134,6 +157,8 @@ infoBtn.on('pointerdown', function () {
             // Not moving if mouse isn't held or arrows aren't held
             this.paddle.setVelocityX(0);
         }
+
+    }
         if (this.ball.body.onFloor()) {
             this.checkBallOutOfBounds.call(this, this.ball);
         }
@@ -213,8 +238,8 @@ infoBtn.on('pointerdown', function () {
         const numBlocks = Math.floor(gameConfig.gameWidth / blockWidth);
 
         for (let i = 0; i < blockColors.length; i++) {
-            //for (let j = 0; j < numBlocks; j++) {
-            for (let j = 6; j < 7 ; j++) {   //na skusanie levelov  
+            for (let j = 3; j < numBlocks-3; j++) {
+            //for (let j = 7; j < 8 ; j++) {   //na skusanie levelov  
                 const xPosition = (j * blockWidth + blockWidth / 2) + 10;
                 const yPos = yPosition + i * 28;
                 this.blocks.create(xPosition, yPos, blockColors[i]).refreshBody();
@@ -491,7 +516,7 @@ const config = {
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: 800, 
+        width: 900, 
         height: 600, 
     },
     
