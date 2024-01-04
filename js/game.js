@@ -1,6 +1,14 @@
 const maxAdjustmentAngle = 70;
 let scoreText;
 
+const gameConfig = {
+    centerX: 0,
+    centerY: 0,
+    gameWidth: 0,
+    gameHeight: 0,
+};
+
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/Sem_project/service-worker.js')
@@ -22,15 +30,12 @@ class MainScene extends Phaser.Scene {
     scoreMult;
     constructor() {
         super({ key: 'MainScene' });
-        this.currentLevel = 0;
     }
 
     preload() {
-        // Load any assets here from your assets directory
         this.load.json('levels', 'levels.json');
-        this.load.image('background', 'assets/background.png');
         this.load.image('ball', 'assets/ball.png');
-        this.load.image('paddle', 'assets/paddle.png'); // Loads the paddle image
+        this.load.image('paddle', 'assets/paddle.png');
         this.load.image('blue_block', 'assets/block_blue.png');
         this.load.image('orange_block', 'assets/block_orange.png');
         this.load.image('red_block', 'assets/block_red.png');
@@ -38,15 +43,17 @@ class MainScene extends Phaser.Scene {
         this.load.image('green_block', 'assets/block_green.png');
         this.load.image('yellow_block', 'assets/block_yellow.png');
         this.load.image('pink_block', 'assets/block_pink.png');
-        this.load.image('pauseButton', 'assets/pause_button1.png'); //Placeholder obrazok
-        this.load.image('restartButton', 'assets/restart.png'); //Placeholder obrazok
-        this.load.image('informationButtonImage', 'assets/information_button.png');
+        this.load.image('turquoise_block', 'assets/block_turquoise.png');
+        this.load.image('pauseButton', 'assets/pause_button1.png'); 
+        this.load.image('restartButton', 'assets/restart.png'); 
+        this.load.image('informationButtonImage', 'assets/info-icon.png');
     }
 
 
     create() {
         this.loadGameState();
-        this.add.image(400, 300, 'background');
+
+        this.add.image(gameConfig.centerX, gameConfig.centerY, 'background').setDisplaySize(gameConfig.gameWidth,gameConfig.gameHeight);
         this.score = 0;
         this.scoreMult = 1;
         if (!this.levelsShuffled) {
@@ -81,12 +88,12 @@ infoBtn.on('pointerdown', function () {
 
 
         const levelData = this.cache.json.get('levels').levels[this.currentLevel];
-        scoreText = this.add.text(this.cameras.main.width - 16, 16, `Score: 0  Order: ${this.currentLevel + 1}  Difficulty: ${levelData.level}`,{
+        scoreText = this.add.text(gameConfig.gameWidth - 16, 16, `Score: 0  Order: ${this.currentLevel + 1}  Difficulty: ${levelData.level}`,{
             fontSize: '26px',
             fill: '#fff'
         });
         scoreText.setOrigin(1, 0);
-        scoreText.setX(this.cameras.main.width - 16);
+        scoreText.setX(gameConfig.gameWidth - 16);
     }
 
 
@@ -94,13 +101,12 @@ infoBtn.on('pointerdown', function () {
         const levelData = this.cache.json.get('levels').levels[level];
 
         this.blocks = this.physics.add.staticGroup();
-        //this.createRowOfBlocks.call(this, 80, 'blue_block');
         this.createBlocksForLevel(80, levelData.blockColors); 
-        this.ball = this.physics.add.sprite(400, 300, 'ball');
+        this.ball = this.physics.add.sprite(gameConfig.centerX, gameConfig.centerY, 'ball');
+        this.paddle = this.physics.add.sprite(gameConfig.centerX,gameConfig.gameHeight *0.8, 'paddle');
         this.ball.setCollideWorldBounds(true); // Collides with world
         this.ball.setBounce(1, 1); // Keeps velocity on bounces
-        this.ball.setVelocity(0, 400); // X velocity = 0, Y velocity = 400
-        this.paddle = this.physics.add.sprite(400, 500, 'paddle');
+        this.ball.setVelocity(0,400); // X velocity = 0, Y velocity = 400
         this.paddle.setCollideWorldBounds(true); // Stops from going into walls
         this.paddle.body.immovable = true; // Paddle won't move when the ball hits it
         this.physics.add.collider(this.ball, this.paddle, this.updateAngle, null, this); // Calls updateAngle on collision
@@ -108,13 +114,36 @@ infoBtn.on('pointerdown', function () {
     }
 
     update() {
-        this.cursors = this.input.keyboard.createCursorKeys();
-        this.pointer = this.input.activePointer;
+        
+        //mobil
+        //if (window.DeviceOrientationEvent) {
+        if (window.DeviceOrientationEvent && (window.innerWidth <= 800 || window.innerHeight <= 800 )) {
+            console.log('Gyroscope');
+
+            this.cursors = null; 
+            this.pointer = null; 
+            window.addEventListener('deviceorientation', (event) => {
+                event.preventDefault();
+                const sensitivity = 0.02;
+                const tilt= event.gamma * sensitivity;
+                this.paddle.setVelocityX( tilt * 350);
+            });
+        }
+
+       //notbuk
+        //if (!window.DeviceOrientationEvent) {
+        else {
+            this.cursors = this.input.keyboard.createCursorKeys();
+            this.pointer = this.input.activePointer;
+
+            console.log('sipky');
+        
         if (this.cursors.left.isDown) { // Is left arrow held
             this.paddle.setVelocityX(-350); // left
         } else if (this.cursors.right.isDown) { // Is right arrow held
             this.paddle.setVelocityX(350); // right
-        } /*else if (this.pointer.isDown && (this.pointer.x >= 0 && this.pointer.x <= this.sys.game.config.width &&
+        } 
+        /*else if (this.pointer.isDown && (this.pointer.x >= 0 && this.pointer.x <= this.sys.game.config.width &&
             this.pointer.y >= 0 && this.pointer.y <= this.sys.game.config.height)) {
             // Check if the mouse pointer is to the left of the paddle
             if (this.pointer.x < this.paddle.x) {
@@ -128,6 +157,8 @@ infoBtn.on('pointerdown', function () {
             // Not moving if mouse isn't held or arrows aren't held
             this.paddle.setVelocityX(0);
         }
+
+    }
         if (this.ball.body.onFloor()) {
             this.checkBallOutOfBounds.call(this, this.ball);
         }
@@ -182,21 +213,19 @@ infoBtn.on('pointerdown', function () {
         const levelData = this.cache.json.get('levels').levels[this.currentLevel];
         scoreText.setText(`Score: ${this.score}  Order: ${this.currentLevel + 1}  Difficulty: ${levelData.level}`);
 
-        /*if (block.texture.key === 'blue_block') {
+        
+        if (block.texture.key === 'blue_block') {
             this.blocks.create(block.x, block.y, 'orange_block').refreshBody();
         }
         if (block.texture.key === 'orange_block') {
             this.blocks.create(block.x, block.y, 'red_block').refreshBody();
         }
-        if (block.texture.key === 'red_block') {
-            this.blocks.create(block.x, block.y, 'pink_block').refreshBody();
-        }
+
         if (block.texture.key === 'pink_block') {
             this.blocks.create(block.x, block.y, 'green_block').refreshBody();
         }
-        if (block.texture.key === 'green_block') {
-            this.blocks.create(block.x, block.y, 'yellow_block').refreshBody();
-        }*/
+
+
         if (this.blocks.countActive() === 0) {
             //this.advanceToNextLevel();
             this.scene.pause();
@@ -206,12 +235,11 @@ infoBtn.on('pointerdown', function () {
 
     createBlocksForLevel(yPosition, blockColors) {
         const blockWidth = 61;
-        const gameWidth = this.sys.game.config.width;
-        const numBlocks = Math.floor(gameWidth / blockWidth);
+        const numBlocks = Math.floor(gameConfig.gameWidth / blockWidth);
 
         for (let i = 0; i < blockColors.length; i++) {
-            for (let j = 0; j < numBlocks; j++) {
-            //for (let j = 6; j < 7; j++) {   //na skusanie levelov  
+            for (let j = 3; j < numBlocks-3; j++) {
+            //for (let j = 7; j < 8 ; j++) {   //na skusanie levelov  
                 const xPosition = (j * blockWidth + blockWidth / 2) + 10;
                 const yPos = yPosition + i * 28;
                 this.blocks.create(xPosition, yPos, blockColors[i]).refreshBody();
@@ -219,21 +247,6 @@ infoBtn.on('pointerdown', function () {
         }
     }
 
-    /*
-    createRowOfBlocks(yPosition, blockTexture) {
-        const blockWidth = 60; // Width of each block
-        const gameWidth = this.sys.game.config.width;
-        const numBlocks = Math.floor(gameWidth / blockWidth);
-
-        for (let i = 0; i < numBlocks; i++) {
-            // Calculate the x position for each block
-            const xPosition = (i * blockWidth + blockWidth / 2) + 10;
-
-            // Create the block and add it to the group
-            this.blocks.create(xPosition, yPosition, blockTexture).refreshBody();
-        }
-    }
-    */
 
     checkBallOutOfBounds(ball) {
         let bounds = this.physics.world.bounds;
@@ -279,18 +292,109 @@ infoBtn.on('pointerdown', function () {
     }
 }
 
+class TitleScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'TitleScene' });
+    }
+
+
+
+    preload() {
+        this.load.image('background', 'assets/background.png');
+        this.load.image('play_btn', 'assets/play_btn.png');
+    }
+
+
+    create() {
+
+        gameConfig.centerX = this.scale.width / 2;
+        gameConfig.centerY = this.scale.height / 2;
+        gameConfig.gameWidth = this.scale.width;
+        gameConfig.gameHeight = this.scale.height;
+
+        //console.log('centerX:', gameConfig.centerX);
+        //console.log('centerY:', gameConfig.centerY);
+        //console.log('gameWidth:', gameConfig.gameWidth);
+        //console.log('gameHeight:', gameConfig.gameHeight); 
+
+
+        this.add.image(gameConfig.centerX, gameConfig.centerY, 'background').setDisplaySize(gameConfig.gameWidth,gameConfig.gameHeight);
+
+
+        const titleText = this.add.text(gameConfig.centerX, gameConfig.centerY - 50 , 'Breakout', {
+            fontSize: '70px',
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 'bold',
+            fill: [ '#FFBE07'],  
+            strokeThickness: 4,            
+            shadow: {
+                offsetX: 2,
+                offsetY: 2,
+                color: '#000207',
+                blur: 2,
+                stroke: false,
+                fill: true
+            }
+        }).setOrigin(0.5, 0.5);
+        
+        
+        this.tweens.add({
+            targets: titleText,
+            scaleX: 1.3,
+            scaleY: 1.2,
+            ease: 'Sine.easeInOut',
+            yoyo: true,
+            repeat: -1
+        });
+
+
+       // Play button
+            let playButton = this.add.image(gameConfig.centerX, gameConfig.centerY + 60, 'play_btn'); 
+        
+        
+        playButton.setInteractive();
+        
+        playButton.on('pointerover', () => {
+            this.tweens.add({
+                targets: playButton,
+                scale: 1.2,
+                duration: 200,
+                ease: 'Power1',
+            });
+            this.input.setDefaultCursor('pointer');
+        });
+        
+        playButton.on('pointerout', () => {
+            this.tweens.add({
+                targets: playButton,
+                scale: 1,
+                duration: 200,
+                ease: 'Power1',
+            });
+            this.input.setDefaultCursor('default');
+        });
+        
+        playButton.on('pointerdown', () => {
+            this.scene.stop('TitleScene');
+            this.scene.start('MainScene');
+        });
+}
+
+}
+
+
 class PauseScene extends Phaser.Scene {
     constructor() {
         super({ key: 'PauseScene' });
     }
 
     create() {
-        this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Game Paused', { fontSize: '32px', fill: '#d0a734' })
+        this.add.text(gameConfig.centerX,gameConfig.centerY, 'Game Paused', { fontSize: '32px', fill: '#d0a734' })
             .setOrigin(0.5, 0.5);
 
-        // Optionally add a 'Resume' button or click to resume
+
         this.input.on('pointerdown', () => {
-            this.scene.resume('MainScene'); // Assuming 'MainScene' is the key of your main game scene
+            this.scene.resume('MainScene'); 
             this.scene.stop();
         });
     }
@@ -302,7 +406,10 @@ class GameOver extends Phaser.Scene {
     }
 
     create() {
-        this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Game Over\n Press any button to restart', { fontSize: '32px', fill: '#d0a734' })
+        this.add.text(gameConfig.centerX, gameConfig.centerY, 'Game Over\n Press any button to restart', { 
+            fontSize: '32px',
+            align: 'center',
+            fill: '#d0a734' })
         .setOrigin(0.5, 0.5);
         this.input.on('pointerdown', () => {
             console.log('test');
@@ -314,33 +421,6 @@ class GameOver extends Phaser.Scene {
     }
 }
 
-
-    /*
-    class InstructionScene extends Phaser.Scene {
-        constructor() {
-            super({ key: 'InstructionScene' });
-        }
-    
-        create() {
-            // Create an instruction window
-            const textContent = 'Game Instructions:\n\nUse left and right arrows to move the paddle.\nBreak all the blocks to advance to the next level.\nAvoid letting the ball fall below the paddle.';
-            const instructionText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, textContent, {
-                fontSize: '20px',
-                fill: '#fff',
-                backgroundColor: '#333',
-                padding: { x: 20, y: 40 },
-                align: 'center',
-            }).setOrigin(0.5, 0.5);
-            
-            // Listen for a pointerdown event anywhere on the game canvas
-            this.input.on('pointerdown', function () {
-                this.scene.stop();
-                this.scene.resume('MainScene'); // Resume the main scene
-            }, this);
-        }
-    }    
-
-*/
 class InstructionScene extends Phaser.Scene {
     constructor() {
         super({ key: 'InstructionScene' });
@@ -351,18 +431,17 @@ class InstructionScene extends Phaser.Scene {
         const instructionText = document.querySelector('.instruction-text').innerText;
 
         const style = {
-            font: '23px Arial',
-            fill: '#ffffff',
+            font: '22px Arial',
+            fill: '#d0a734',
             align: 'center',
             wordWrap: { width: 500, useAdvancedWrap: true },
-            stroke: '#000000',       
-            strokeThickness: 3         
+            backgroundColor: '#000000',
+            padding: { x: 10, y: 10 }        
         };
 
         
-        const text = this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2, instructionText, style)
+        const text = this.add.text(gameConfig.centerX, gameConfig.centerY, instructionText, style)
             .setOrigin(0.5, 0.3);
-        text.setStroke('#000000', 4);
         
         this.input.on('pointerdown', () => {
             this.scene.stop();
@@ -377,28 +456,40 @@ class VictoryScene extends Phaser.Scene {
         super({ key: 'VictoryScene' });
     }
     create() {
-        const victoryText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY - 50, 'Victory!', {
-            fontSize: '32px',
+        const victoryText = this.add.text(gameConfig.centerX, gameConfig.centerY - 50, 'Victory!', {
+            fontSize: '50px',
             fill: '#d0a734'
         }).setOrigin(0.5, 0.5);
 
         // Add a button to proceed to the next level
-        const nextLevelButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY + 50, 'Next Level', {
+        const nextLevelButton = this.add.text(gameConfig.centerX, gameConfig.centerY + 50, 'Next Level', {
             fontSize: '24px',
             fill: '#ffffff',
             backgroundColor: '#d0a734',
-            padding: { x: 10, y: 5 },
+            padding: { x: 10, y: 5 }, 
         }).setOrigin(0.5, 0.5).setInteractive();
 
-          // Change cursor style when hovering over the button
+
     nextLevelButton.on('pointerover', () => {
         nextLevelButton.setStyle({ fill: '#ffff00' });
+        this.tweens.add({
+            targets: nextLevelButton,
+            scale: 1.1,
+            duration: 200,
+            ease: 'Power1',
+        });
         this.input.setDefaultCursor('pointer');
     });
 
-    // Restore original style when not hovering
+
     nextLevelButton.on('pointerout', () => {
         nextLevelButton.setStyle({ fill: '#ffffff' });
+        this.tweens.add({
+            targets: nextLevelButton,
+            scale: 1,
+            duration: 200,
+            ease: 'Power1',
+        });
         this.input.setDefaultCursor('default');
     });
 
@@ -421,15 +512,21 @@ goToNextLevel() {
 
 const config = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
+    type: Phaser.AUTO,
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: 900, 
+        height: 600, 
+    },
+    
     physics: {
         default: 'arcade',
         arcade: {
             debug: false
         }
     },
-    scene: [MainScene,InstructionScene, PauseScene, GameOver, VictoryScene]
+    scene: [TitleScene,MainScene,InstructionScene, PauseScene, GameOver, VictoryScene]
 };
 
 
