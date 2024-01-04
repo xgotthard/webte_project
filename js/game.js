@@ -120,13 +120,23 @@ infoBtn.on('pointerdown', function () {
         if (window.DeviceOrientationEvent && (window.innerWidth <= 800 || window.innerHeight <= 800 )) {
             console.log('Gyroscope');
 
-            this.cursors = null; 
-            this.pointer = null; 
+            this.cursors = null;
+            this.pointer = null;
             window.addEventListener('deviceorientation', (event) => {
                 event.preventDefault();
-                const sensitivity = 0.02;
-                const tilt= event.gamma * sensitivity;
-                this.paddle.setVelocityX( tilt * 350);
+                const sensitivity = 0.1;
+                let tilt;
+
+                // Check if the device is in landscape mode
+                if (window.innerWidth > window.innerHeight) {
+                    // Use beta for left-right tilt in landscape mode
+                    tilt = event.beta * sensitivity;
+                } else {
+                    // Use gamma for left-right tilt in portrait mode
+                    tilt = event.gamma * sensitivity;
+                }
+
+                this.paddle.setVelocityX(tilt * 350);
             });
         }
 
