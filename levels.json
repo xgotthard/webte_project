@@ -1,29 +1,25 @@
 {
-    "levels": [
-    {
+    "levels": 
+    [
+      {
         "level": 1,
-        "rows": 1,
-        "blockColors": ["yellow_block"]
-},
-        {
+        "blockColors": ["turquoise_block"]
+      },
+      {
         "level": 2,
-        "rows": 2,
-        "blockColors": ["green_block", "yellow_block"]
-    },
-    {
+        "blockColors": ["orange_block", "yellow_block"]
+      },
+      {
         "level": 3,
-        "rows": 3,
         "blockColors": ["pink_block", "green_block", "yellow_block"]
       },
       {
         "level": 4,
-        "rows": 5,
-        "blockColors": ["yellow_block", "yellow_block", "pink_block", "red_block", "orange_block"]
+        "blockColors": ["yellow_block", "yellow_block", "pink_block", "red_block", "green_block"]
       },
       {
         "level": 5,
-        "rows": 4,
-        "blockColors": ["blue_block", "pink_block", "blue_block", "green_block", "red_block"]
+        "blockColors": ["blue_block", "yellow_block", "turquoise_block","green_block"]
       }
     ]
   }

@@ -19,6 +19,8 @@ self.addEventListener('install', (event) => {
                '/Sem_project/assets/pause_button1.png',
                '/Sem_project/assets/restart.png',
                '/Sem_project/assets/information_button.png',
+               '/Sem_project/assets/info-icon.png',
+               '/Sem_project/assets/play_btn.png',
                '/Sem_project/index.html',
             ]);
         })
