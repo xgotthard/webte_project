@@ -2,7 +2,7 @@
   "name": "Breakout Arcade Game",
   "short_name": "Breakout",
   "description": "A game inspired by the classic arcade game 'Breakout'!",
-  "start_url": "/Sem_project/index.html",
+  "start_url": "/~xstefinova/webte_project/index.html",
   "display": "standalone",
   "background_color": "#050e17",
   "theme_color": "#050e17",

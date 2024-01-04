@@ -11,7 +11,7 @@ const gameConfig = {
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/Sem_project/service-worker.js')
+        navigator.serviceWorker.register('/~xstefinova/webte_project/service-worker.js')
             .then((registration) => {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
             }, (err) => {
